@@ -1,10 +1,37 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+const translations = {
+  en: {
+    title: "My Tasks",
+    subtitle: "Student Dashboard",
+    placeholderTitle: "Task title...",
+    placeholderDesc: "Description...",
+    addButton: "Add Task",
+    empty: "No tasks yet... time to rest!",
+    placeholderDate: "Due date",
+    due: "Due:",
+  },
+  he: {
+    title: "המשימות שלי",
+    subtitle: "לוח משימות לסטודנט",
+    placeholderTitle: "כותרת המשימה...",
+    placeholderDesc: "תיאור...",
+    addButton: "הוספת משימה",
+    empty: "אין משימות כרגע... זמן לנוח!",
+    placeholderDate: "תאריך יעד",
+    due: "יעד:",
+  },
+};
+
 function App() {
   const [tasks, setTasks] = useState([]);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDescription, setNewTaskDescription] = useState("");
+  const [newTaskDate, setNewTaskDate] = useState("");
+  const [language, setLanguage] = useState("en");
+
+  const t = translations[language];
 
   const fetchTasks = async () => {
     try {
@@ -21,13 +48,16 @@ function App() {
       id: 0,
       title: newTaskTitle,
       description: newTaskDescription,
-      dueDate: new Date().toISOString(),
+      dueDate: newTaskDate
+        ? new Date(newTaskDate).toISOString()
+        : new Date().toISOString(),
       isCompleted: false,
     };
     try {
       await axios.post("https://localhost:7137/api/Tasks", taskData);
       setNewTaskTitle("");
       setNewTaskDescription("");
+      setNewTaskDate("");
       fetchTasks();
     } catch (error) {
       console.error("Error adding task:", error.response?.data);
@@ -66,15 +96,24 @@ function App() {
 
   return (
     <div
-      className="min-h-screen bg-[#eee4e1] font-sans text-slate-800 py-12 px-4"
-      dir="rtl"
+      className="min-h-screen bg-[#eee4e1] font-sans text-slate-800 py-12 px-4 transition-all duration-300"
+      dir={language === "he" ? "rtl" : "ltr"}
     >
+      <div className="max-w-2xl mx-auto flex justify-end mb-4">
+        <button
+          onClick={() => setLanguage(language === "en" ? "he" : "en")}
+          className="bg-white/50 px-4 py-2 rounded-full text-sm font-bold hover:bg-white transition-all shadow-sm border border-white/20"
+        >
+          {language === "en" ? "עברית" : "English"}
+        </button>
+      </div>
+
       <div className="max-w-2xl mx-auto">
         <header className="text-center mb-12">
           <h1 className="text-5xl font-extrabold text-[#4a3728] tracking-tight mb-2 drop-shadow-sm">
-            My Tasks
+            {t.title}
           </h1>
-          <p className="text-slate-500 font-medium italic">Student Dashboard</p>
+          <p className="text-slate-500 font-medium italic">{t.subtitle}</p>
         </header>
 
         <div className="bg-[#e7d8c9] rounded-3xl shadow-lg p-8 mb-10 border border-[#e6beae]/20">
@@ -83,22 +122,29 @@ function App() {
               type="text"
               value={newTaskTitle}
               onChange={(e) => setNewTaskTitle(e.target.value)}
-              placeholder="Task title..."
+              placeholder={t.placeholderTitle}
               className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-[#e6beae] outline-none transition-all placeholder:text-slate-400 font-semibold"
             />
 
             <textarea
               value={newTaskDescription}
               onChange={(e) => setNewTaskDescription(e.target.value)}
-              placeholder="Description..."
+              placeholder={t.placeholderDesc}
               className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-[#e6beae] outline-none transition-all h-24 resize-none"
+            />
+
+            <input
+              type="date"
+              value={newTaskDate}
+              onChange={(e) => setNewTaskDate(e.target.value)}
+              className="w-full px-5 py-4 bg-white/50 border-none rounded-2xl focus:ring-2 focus:ring-[#e6beae] outline-none transition-all text-slate-600"
             />
 
             <button
               onClick={addTask}
-              className="w-full bg-[#a57b5a] hover:bg-[#d4ac9c] text-white font-bold py-4 rounded-2xl shadow-md transform active:scale-[0.98] transition-all"
+              className="w-full bg-[#a57b5a] hover:bg-[#8e684a] text-white font-bold py-4 rounded-2xl shadow-md transform active:scale-[0.98] transition-all"
             >
-              Add Task
+              {t.addButton}
             </button>
           </div>
         </div>
@@ -107,14 +153,14 @@ function App() {
           {tasks.map((task) => (
             <div
               key={task.id}
-              className="flex items-center justify-between p-6 bg-[#e7d8c9] rounded-2xl shadow-sm border border-white/30 hover:shadow-md transition-all"
+              className="flex items-center justify-between p-6 bg-[#e7d8c9] rounded-2xl shadow-sm border border-white/30 hover:shadow-md transition-all animate-fadeIn"
             >
               <div
-                className="flex flex-col gap-1 cursor-pointer flex-grow"
+                className="flex flex-col gap-1 cursor-pointer grow"
                 onClick={() => toggleComplete(task)}
               >
                 <span
-                  className={`text-lg font-bold ${
+                  className={`text-lg font-bold transition-all ${
                     task.isCompleted
                       ? "text-slate-400 line-through"
                       : "text-[#4a3728]"
@@ -123,11 +169,19 @@ function App() {
                   {task.title}
                 </span>
                 <p className="text-slate-500 text-sm">{task.description}</p>
+                {task.dueDate && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#a57b5a] mt-2 block">
+                    {t.due}{" "}
+                    {new Date(task.dueDate).toLocaleDateString(
+                      language === "he" ? "he-IL" : "en-GB",
+                    )}
+                  </span>
+                )}
               </div>
 
               <button
                 onClick={() => deleteTask(task.id)}
-                className="text-slate-400 hover:text-rose-400 transition-colors mr-4"
+                className="text-slate-400 hover:text-rose-400 transition-colors mr-4 p-2 rounded-full hover:bg-white/30"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -146,6 +200,14 @@ function App() {
               </button>
             </div>
           ))}
+
+          {tasks.length === 0 && (
+            <div className="text-center py-16 bg-white/10 rounded-3xl border-2 border-dashed border-[#e6beae]/40">
+              <p className="text-[#4a3728]/60 font-medium text-lg italic">
+                {t.empty}
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
