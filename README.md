@@ -35,8 +35,6 @@ A full-stack web application for managing academic tasks, schedules, and student
 cd Backend/StudentDashboard.API
 dotnet ef database update
 dotnet run
-# API runs at https://localhost:7137
-# Swagger UI at https://localhost:7137/swagger
 ```
 
 ### Frontend
@@ -44,5 +42,4 @@ dotnet run
 cd student-dashboard-client
 npm install
 npm run dev
-# App runs at http://localhost:5173
 ```
