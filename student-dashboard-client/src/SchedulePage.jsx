@@ -19,6 +19,7 @@ const translations = {
     delete: "Delete",
     filters: ["A", "B", "Summer"],
     semesterLabels: { A: "Semester A", B: "Semester B", Summer: "Summer" },
+    loading: "Loading data...",
   },
   he: {
     title: "מערכת שעות שבועית",
@@ -27,6 +28,7 @@ const translations = {
     delete: "מחק",
     filters: ["א", "ב", "קיץ"],
     semesterLabels: { A: "סמסטר א", B: "סמסטר ב", Summer: "קיץ" },
+    loading: "...נתונים נטענים",
   },
 };
 
@@ -66,6 +68,7 @@ function hexToRgb(hex) {
 
 export default function SchedulePage({ language }) {
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [formState, setFormState] = useState(null); // null | { initialData } — null=closed
   const [semFilter, setSemFilter] = useState("A");
   const t = translations[language];
@@ -76,6 +79,8 @@ export default function SchedulePage({ language }) {
       setItems(res.data);
     } catch (err) {
       console.error("Error fetching schedule:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,6 +103,15 @@ export default function SchedulePage({ language }) {
     acc[d] = displayedItems.filter((item) => item.dayOfWeek === d);
     return acc;
   }, {});
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen gap-5">
+        <div className="w-14 h-14 rounded-full border-4 border-[#e7d8c9] border-t-[#a57b5a] animate-spin" />
+        <p className="text-[#4a3728] font-semibold text-lg tracking-wide">{t.loading}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen flex flex-col overflow-hidden py-4 px-6">
