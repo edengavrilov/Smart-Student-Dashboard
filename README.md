@@ -26,7 +26,7 @@ A full-stack web application for managing academic tasks, schedules, and student
 ### Development Tools
 - **Git** — Version control
 - **Swagger / OpenAPI** — API documentation and testing
-- **AI-Assisted Development** — ChatGPT, Claude, Cursor, and Copilot used for code generation, debugging, and design decisions
+- **AI-Assisted Development** — ChatGPT and Claude used for code generation, debugging, and design decisions
 
 ## Getting Started
 
