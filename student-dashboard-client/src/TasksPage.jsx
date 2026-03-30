@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-const API = "https://localhost:7137/api/Tasks";
+const API = "https://student-dashboard-api-iryi.onrender.com/api/Tasks";
 const CATEGORIES = ["Studies", "Personal", "Work"];
 
 const translations = {
