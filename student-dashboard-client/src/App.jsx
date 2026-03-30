@@ -79,8 +79,8 @@ export default function App() {
       className="min-h-screen bg-[#eee4e1] font-sans text-slate-800 flex"
       dir={isRTL ? "rtl" : "ltr"}
     >
-      {/* Sidebar */}
-      <aside className="group w-16 hover:w-56 shrink-0 min-h-screen bg-[#4a3728] text-white flex flex-col py-8 shadow-2xl transition-[width] duration-300 overflow-hidden z-10">
+      {/* Sidebar — hidden on mobile, shown on md+ */}
+      <aside className="group w-16 hover:w-56 shrink-0 min-h-screen bg-[#4a3728] text-white hidden md:flex flex-col py-8 shadow-2xl transition-[width] duration-300 overflow-hidden z-10">
         {/* Title */}
         <div className="flex items-center h-10 mb-10 px-3">
           {/* Icon always visible */}
@@ -149,13 +149,42 @@ export default function App() {
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 min-w-0 overflow-auto">
+      <main className="flex-1 min-w-0 overflow-auto pb-16 md:pb-0">
         {activePage === "tasks" ? (
           <TasksPage language={language} />
         ) : (
           <SchedulePage language={language} />
         )}
       </main>
+
+      {/* Bottom navigation — mobile only */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#4a3728] text-white flex items-center justify-around px-2 pt-2 pb-3 z-20 shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
+        {["tasks", "schedule"].map((page) => (
+          <button
+            key={page}
+            onClick={() => setActivePage(page)}
+            className={`flex flex-col items-center gap-1 px-6 py-1 rounded-xl transition-all ${
+              activePage === page
+                ? "text-white bg-[#a57b5a]/40"
+                : "text-[#e7d8c9]/60"
+            }`}
+          >
+            {NAV_ICONS[page]}
+            <span className="text-[10px] font-semibold tracking-wide">
+              {t[page]}
+            </span>
+          </button>
+        ))}
+        <button
+          onClick={() => setLanguage(language === "en" ? "he" : "en")}
+          className="flex flex-col items-center gap-1 px-6 py-1 rounded-xl text-[#e7d8c9]/60"
+        >
+          {LANG_ICON}
+          <span className="text-[10px] font-semibold tracking-wide">
+            {language === "en" ? "עב׳" : "EN"}
+          </span>
+        </button>
+      </nav>
     </div>
   );
 }

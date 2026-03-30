@@ -133,7 +133,7 @@ function TaskForm({ language, task, onClose, onSaved }) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 border border-[#e6beae]/30">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-5 md:p-8 border border-[#e6beae]/30 max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-extrabold text-[#4a3728] mb-6">
           {isEdit ? t.editTitle : t.addButton}
         </h2>
@@ -234,7 +234,7 @@ function TaskCard({ task, language, onEdit, onDelete, onToggle }) {
             e.stopPropagation();
             onDelete(task.id);
           }}
-          className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-400 transition-all shrink-0 rounded p-0.5"
+          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 text-slate-300 hover:text-rose-400 transition-all shrink-0 rounded p-0.5"
           title="Delete"
         >
           <svg
@@ -438,15 +438,15 @@ export default function TasksPage({ language }) {
   }
 
   return (
-    <div className="py-10 px-6 min-h-screen">
+    <div className="py-6 md:py-10 px-4 md:px-6 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between mb-7">
-        <h1 className="text-4xl font-extrabold text-[#4a3728] tracking-tight drop-shadow-sm">
+      <div className="flex items-center justify-between gap-3 mb-7 flex-wrap">
+        <h1 className="text-2xl md:text-4xl font-extrabold text-[#4a3728] tracking-tight drop-shadow-sm">
           {t.title}
         </h1>
         <button
           onClick={openAdd}
-          className="bg-[#a57b5a] hover:bg-[#8e684a] text-white font-bold px-5 py-2.5 rounded-2xl shadow-md active:scale-[0.98] transition-all"
+          className="bg-[#a57b5a] hover:bg-[#8e684a] text-white font-bold px-4 md:px-5 py-2.5 rounded-2xl shadow-md active:scale-[0.98] transition-all text-sm md:text-base"
         >
           + {t.addButton}
         </button>
@@ -455,7 +455,7 @@ export default function TasksPage({ language }) {
       {/* Toolbar: filters + sort */}
       <div className="flex flex-wrap items-center gap-3 mb-8">
         {/* Filter buttons */}
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {[
             { key: "all", label: t.filterAll },
             { key: "inProgress", label: t.filterInProgress },
@@ -492,7 +492,7 @@ export default function TasksPage({ language }) {
       </div>
 
       {/* Kanban board */}
-      <div className="grid grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {CATEGORIES.map((cat) => (
           <KanbanColumn
             key={cat}

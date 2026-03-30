@@ -132,7 +132,7 @@ export default function ScheduleForm({ language, onClose, onSaved, initialData }
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 border border-[#e6beae]/30 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-5 md:p-8 border border-[#e6beae]/30 max-h-[90vh] overflow-y-auto">
         <h2 className="text-2xl font-extrabold text-[#4a3728] mb-6">
           {isEdit ? t.titleEdit : t.titleAdd}
         </h2>

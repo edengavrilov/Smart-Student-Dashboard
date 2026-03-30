@@ -114,15 +114,15 @@ export default function SchedulePage({ language }) {
   }
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden py-4 px-6">
+    <div className="flex flex-col py-4 px-4 md:px-6 md:h-screen md:overflow-hidden">
       {/* Header row */}
-      <div className="flex items-center justify-between mb-3 shrink-0">
-        <h1 className="text-3xl font-extrabold text-[#4a3728] tracking-tight drop-shadow-sm">
+      <div className="flex items-center justify-between gap-3 mb-3 shrink-0 flex-wrap">
+        <h1 className="text-2xl md:text-3xl font-extrabold text-[#4a3728] tracking-tight drop-shadow-sm">
           {t.title}
         </h1>
         <button
           onClick={() => setFormState({ initialData: null })}
-          className="bg-[#a57b5a] hover:bg-[#8e684a] text-white font-bold px-5 py-2.5 rounded-2xl shadow-md active:scale-[0.98] transition-all"
+          className="bg-[#a57b5a] hover:bg-[#8e684a] text-white font-bold px-4 md:px-5 py-2.5 rounded-2xl shadow-md active:scale-[0.98] transition-all text-sm md:text-base"
         >
           {t.addCourse}
         </button>
@@ -145,126 +145,128 @@ export default function SchedulePage({ language }) {
         ))}
       </div>
 
-      {/* Grid */}
-      <div className="flex-1 rounded-3xl border border-[#e6beae]/40 shadow-lg bg-white/60 overflow-hidden flex flex-col">
-        {/* Day headers */}
-        <div
-          className="grid shrink-0"
-          style={{ gridTemplateColumns: "52px repeat(6, 1fr)" }}
-        >
-          <div className="bg-[#e7d8c9] border-b border-e border-[#e6beae]/60 h-10" />
-          {DAY_INDICES.map((d, i) => (
-            <div
-              key={d}
-              className="bg-[#e7d8c9] border-b border-e border-[#e6beae]/60 h-10 flex items-center justify-center font-bold text-[#4a3728] text-sm last:border-e-0"
-            >
-              {t.days[i]}
-            </div>
-          ))}
-        </div>
-
-        {/* Time grid */}
-        <div
-          className="grid flex-1"
-          style={{ gridTemplateColumns: "52px repeat(6, 1fr)" }}
-        >
-          {/* Hour labels */}
-          <div className="relative">
-            {HOURS.map((h) =>
-              h < GRID_END ? (
-                <div
-                  key={h}
-                  className="absolute w-full flex justify-center"
-                  style={{ top: `${((h - GRID_START) / TOTAL_HOURS) * 100}%` }}
-                >
-                  <span className="text-[10px] font-semibold text-[#a57b5a] leading-none mt-0.5">
-                    {String(h).padStart(2, "0")}:00
-                  </span>
-                </div>
-              ) : null
-            )}
+      {/* Grid — horizontally scrollable on mobile */}
+      <div className="md:flex-1 overflow-x-auto rounded-3xl border border-[#e6beae]/40 shadow-lg bg-white/60">
+        <div className="min-w-[560px] min-h-[520px] md:h-full flex flex-col">
+          {/* Day headers */}
+          <div
+            className="grid shrink-0"
+            style={{ gridTemplateColumns: "52px repeat(6, 1fr)" }}
+          >
+            <div className="bg-[#e7d8c9] border-b border-e border-[#e6beae]/60 h-10" />
+            {DAY_INDICES.map((d, i) => (
+              <div
+                key={d}
+                className="bg-[#e7d8c9] border-b border-e border-[#e6beae]/60 h-10 flex items-center justify-center font-bold text-[#4a3728] text-sm last:border-e-0"
+              >
+                {t.days[i]}
+              </div>
+            ))}
           </div>
 
-          {/* Day columns */}
-          {DAY_INDICES.map((d) => (
-            <div
-              key={d}
-              className="relative border-s border-[#e6beae]/40 last:border-e-0"
-            >
-              {/* Hour dividers */}
-              {HOURS.map((h) => (
-                <div
-                  key={h}
-                  className="absolute w-full border-t border-[#e6beae]/40"
-                  style={{ top: `${((h - GRID_START) / TOTAL_HOURS) * 100}%` }}
-                />
-              ))}
-
-              {/* Course blocks */}
-              {itemsByDay[d].map((item) => {
-                const top = toPercent(item.startTime);
-                const height = durationPercent(item.startTime, item.endTime);
-                const mins = durationMinutes(item.startTime, item.endTime);
-                const rgb = hexToRgb(item.color || "#a57b5a");
-                const hasTooltip = item.instructor || item.location || item.semester;
-
-                return (
+          {/* Time grid */}
+          <div
+            className="grid flex-1"
+            style={{ gridTemplateColumns: "52px repeat(6, 1fr)" }}
+          >
+            {/* Hour labels */}
+            <div className="relative">
+              {HOURS.map((h) =>
+                h < GRID_END ? (
                   <div
-                    key={item.id}
-                    className="group/card absolute inset-x-0.5 rounded-xl px-1.5 py-1 overflow-visible cursor-pointer"
-                    style={{
-                      top: `${top}%`,
-                      height: `max(${height}%, 24px)`,
-                      backgroundColor: `rgba(${rgb}, 0.22)`,
-                      borderInlineStart: `3px solid rgba(${rgb}, 0.9)`,
-                    }}
-                    onClick={() => setFormState({ initialData: item })}
+                    key={h}
+                    className="absolute w-full flex justify-center"
+                    style={{ top: `${((h - GRID_START) / TOTAL_HOURS) * 100}%` }}
                   >
-                    {/* Always-visible content: name + time */}
-                    <p
-                      className="text-[11px] font-bold leading-tight truncate"
-                      style={{ color: `rgba(${rgb}, 1)` }}
-                    >
-                      {item.courseName}
-                    </p>
-                    {mins >= 45 && (
-                      <p className="text-[10px] text-slate-400 leading-tight">
-                        {formatTime(item.startTime)}–{formatTime(item.endTime)}
-                      </p>
-                    )}
-
-                    {/* Tooltip on hover */}
-                    {hasTooltip && (
-                      <div className="pointer-events-none absolute z-30 top-full mt-1.5 start-0 w-44 bg-[#3a2a1e] text-white rounded-xl p-2.5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-150 shadow-xl">
-                        {/* Arrow pointing up */}
-                        <div className="absolute bottom-full start-3 border-4 border-transparent border-b-[#3a2a1e]" />
-                        {item.instructor && (
-                          <p className="text-[11px] font-semibold truncate">{item.instructor}</p>
-                        )}
-                        {item.location && (
-                          <p className="text-[10px] text-white/70 truncate mt-0.5">{item.location}</p>
-                        )}
-                        {item.semester && (
-                          <p className="text-[10px] text-white/50 mt-0.5">
-                            {t.semesterLabels[item.semester] ?? item.semester}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Delete on hover — stop propagation so it doesn't open the edit form */}
-                    <button
-                      onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
-                      className="absolute top-0.5 end-0.5 hidden group-hover/card:flex items-center justify-center w-5 h-5 rounded-full bg-white/80 text-rose-400 hover:bg-rose-100 transition-all text-xs font-bold"
-                      title={t.delete}
-                    >
-                      ×
-                    </button>
+                    <span className="text-[10px] font-semibold text-[#a57b5a] leading-none mt-0.5">
+                      {String(h).padStart(2, "0")}:00
+                    </span>
                   </div>
-                );
-              })}
+                ) : null
+              )}
             </div>
-          ))}
+
+            {/* Day columns */}
+            {DAY_INDICES.map((d) => (
+              <div
+                key={d}
+                className="relative border-s border-[#e6beae]/40 last:border-e-0"
+              >
+                {/* Hour dividers */}
+                {HOURS.map((h) => (
+                  <div
+                    key={h}
+                    className="absolute w-full border-t border-[#e6beae]/40"
+                    style={{ top: `${((h - GRID_START) / TOTAL_HOURS) * 100}%` }}
+                  />
+                ))}
+
+                {/* Course blocks */}
+                {itemsByDay[d].map((item) => {
+                  const top = toPercent(item.startTime);
+                  const height = durationPercent(item.startTime, item.endTime);
+                  const mins = durationMinutes(item.startTime, item.endTime);
+                  const rgb = hexToRgb(item.color || "#a57b5a");
+                  const hasTooltip = item.instructor || item.location || item.semester;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className="group/card absolute inset-x-0.5 rounded-xl px-1.5 py-1 overflow-visible cursor-pointer"
+                      style={{
+                        top: `${top}%`,
+                        height: `max(${height}%, 24px)`,
+                        backgroundColor: `rgba(${rgb}, 0.22)`,
+                        borderInlineStart: `3px solid rgba(${rgb}, 0.9)`,
+                      }}
+                      onClick={() => setFormState({ initialData: item })}
+                    >
+                      {/* Always-visible content: name + time */}
+                      <p
+                        className="text-[11px] font-bold leading-tight truncate"
+                        style={{ color: `rgba(${rgb}, 1)` }}
+                      >
+                        {item.courseName}
+                      </p>
+                      {mins >= 45 && (
+                        <p className="text-[10px] text-slate-400 leading-tight">
+                          {formatTime(item.startTime)}–{formatTime(item.endTime)}
+                        </p>
+                      )}
+
+                      {/* Tooltip on hover */}
+                      {hasTooltip && (
+                        <div className="pointer-events-none absolute z-30 top-full mt-1.5 start-0 w-44 bg-[#3a2a1e] text-white rounded-xl p-2.5 opacity-0 group-hover/card:opacity-100 transition-opacity duration-150 shadow-xl">
+                          {/* Arrow pointing up */}
+                          <div className="absolute bottom-full start-3 border-4 border-transparent border-b-[#3a2a1e]" />
+                          {item.instructor && (
+                            <p className="text-[11px] font-semibold truncate">{item.instructor}</p>
+                          )}
+                          {item.location && (
+                            <p className="text-[10px] text-white/70 truncate mt-0.5">{item.location}</p>
+                          )}
+                          {item.semester && (
+                            <p className="text-[10px] text-white/50 mt-0.5">
+                              {t.semesterLabels[item.semester] ?? item.semester}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Delete button — always visible on mobile, hover-only on desktop */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
+                        className="absolute top-0.5 end-0.5 flex md:hidden md:group-hover/card:flex items-center justify-center w-5 h-5 rounded-full bg-white/80 text-rose-400 hover:bg-rose-100 transition-all text-xs font-bold"
+                        title={t.delete}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
