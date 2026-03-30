@@ -1,36 +1,98 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 
+const API = "https://localhost:7137/api/Tasks";
+const CATEGORIES = ["Studies", "Personal", "Work"];
+
 const translations = {
   en: {
     title: "My Tasks",
     addButton: "Add Task",
+    editTitle: "Edit Task",
     placeholderTitle: "Task title...",
     placeholderDesc: "Description...",
-    placeholderDate: "Due date",
     save: "Save Task",
     cancel: "Cancel",
-    empty: "No tasks yet... time to rest!",
+    empty: "No tasks here!",
     due: "Due:",
+    filterAll: "All",
+    filterInProgress: "In Progress",
+    filterCompleted: "Completed",
+    sortLabel: "Sort:",
+    sortByDate: "By Due Date",
+    sortByPriority: "By Priority",
+    priority: "Priority",
+    category: "Category",
+    low: "Low",
+    medium: "Medium",
+    high: "High",
+    studies: "Studies",
+    personal: "Personal",
+    work: "Work",
   },
   he: {
     title: "המשימות שלי",
     addButton: "הוספת משימה",
+    editTitle: "עריכת משימה",
     placeholderTitle: "כותרת המשימה...",
     placeholderDesc: "תיאור...",
-    placeholderDate: "תאריך יעד",
     save: "שמור משימה",
     cancel: "ביטול",
-    empty: "אין משימות כרגע... זמן לנוח!",
+    empty: "אין משימות כאן!",
     due: "יעד:",
+    filterAll: "הכל",
+    filterInProgress: "בתהליך",
+    filterCompleted: "הושלם",
+    sortLabel: "מיון:",
+    sortByDate: "לפי תאריך",
+    sortByPriority: "לפי עדיפות",
+    priority: "עדיפות",
+    category: "קטגוריה",
+    low: "נמוך",
+    medium: "בינוני",
+    high: "גבוה",
+    studies: "לימודים",
+    personal: "אישי",
+    work: "עבודה",
   },
 };
 
-function AddTaskModal({ language, onClose, onSaved }) {
+const COLUMN_CONFIG = {
+  Studies: { accent: "#8b7355", bg: "#f5ede4", border: "#d4c4b0" },
+  Personal: { accent: "#a07862", bg: "#faf0ea", border: "#dcc8b8" },
+  Work: { accent: "#6b5b4e", bg: "#f0e8df", border: "#c9b9a8" },
+};
+
+const PRIORITY_BADGE = {
+  0: { bg: "#e8f5e8", text: "#3a7a3a" },
+  1: { bg: "#fff8e1", text: "#9a6c00" },
+  2: { bg: "#fdecea", text: "#9a3333" },
+};
+
+function getCategoryLabel(category, t) {
+  if (category === "Studies") return t.studies;
+  if (category === "Personal") return t.personal;
+  return t.work;
+}
+
+function getPriorityLabel(priority, t) {
+  if (priority === 0) return t.low;
+  if (priority === 2) return t.high;
+  return t.medium;
+}
+
+// ─── TaskForm Modal ────────────────────────────────────────────────────────────
+function TaskForm({ language, task, onClose, onSaved }) {
   const t = translations[language];
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [date, setDate] = useState("");
+  const isEdit = !!task;
+
+  const [title, setTitle] = useState(task?.title ?? "");
+  const [description, setDescription] = useState(task?.description ?? "");
+  const [date, setDate] = useState(
+    task?.dueDate ? task.dueDate.split("T")[0] : "",
+  );
+  const [priority, setPriority] = useState(task?.priority ?? 1);
+  const [category, setCategory] = useState(task?.category ?? "Studies");
   const [saving, setSaving] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -38,17 +100,24 @@ function AddTaskModal({ language, onClose, onSaved }) {
     if (!title.trim()) return;
     setSaving(true);
     try {
-      await axios.post("https://localhost:7137/api/Tasks", {
-        id: 0,
+      const payload = {
+        id: task?.id ?? 0,
         title,
         description,
         dueDate: date ? new Date(date).toISOString() : new Date().toISOString(),
-        isCompleted: false,
-      });
+        isCompleted: task?.isCompleted ?? false,
+        priority: Number(priority),
+        category,
+      };
+      if (isEdit) {
+        await axios.put(`${API}/${task.id}`, payload);
+      } else {
+        await axios.post(API, payload);
+      }
       onSaved();
       onClose();
     } catch (err) {
-      console.error("Error adding task:", err.response?.data);
+      console.error("Error saving task:", err.response?.data);
     } finally {
       setSaving(false);
     }
@@ -63,7 +132,9 @@ function AddTaskModal({ language, onClose, onSaved }) {
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 border border-[#e6beae]/30">
-        <h2 className="text-2xl font-extrabold text-[#4a3728] mb-6">{t.addButton}</h2>
+        <h2 className="text-2xl font-extrabold text-[#4a3728] mb-6">
+          {isEdit ? t.editTitle : t.addButton}
+        </h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
             type="text"
@@ -85,6 +156,36 @@ function AddTaskModal({ language, onClose, onSaved }) {
             onChange={(e) => setDate(e.target.value)}
             className={inputClass}
           />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-[#4a3728]/60 uppercase tracking-wider mb-1.5 block">
+                {t.priority}
+              </label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className={inputClass}
+              >
+                <option value={0}>{t.low}</option>
+                <option value={1}>{t.medium}</option>
+                <option value={2}>{t.high}</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-bold text-[#4a3728]/60 uppercase tracking-wider mb-1.5 block">
+                {t.category}
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={inputClass}
+              >
+                <option value="Studies">{t.studies}</option>
+                <option value="Personal">{t.personal}</option>
+                <option value="Work">{t.work}</option>
+              </select>
+            </div>
+          </div>
           <div className="flex gap-3 pt-2">
             <button
               type="button"
@@ -107,38 +208,188 @@ function AddTaskModal({ language, onClose, onSaved }) {
   );
 }
 
+// ─── TaskCard ─────────────────────────────────────────────────────────────────
+function TaskCard({ task, language, onEdit, onDelete, onToggle }) {
+  const t = translations[language];
+  const badge = PRIORITY_BADGE[task.priority ?? 1];
+
+  return (
+    <div
+      className="bg-white rounded-xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-all group cursor-pointer"
+      onClick={() => onEdit(task)}
+    >
+      {/* Title row */}
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <span
+          className={`font-bold text-sm leading-snug flex-1 ${
+            task.isCompleted ? "line-through text-slate-400" : "text-[#4a3728]"
+          }`}
+        >
+          {task.title}
+        </span>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(task.id);
+          }}
+          className="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-rose-400 transition-all shrink-0 rounded p-0.5"
+          title="Delete"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-4 w-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      {/* Description */}
+      {task.description && (
+        <p className="text-slate-400 text-xs leading-relaxed line-clamp-2 mb-2">
+          {task.description}
+        </p>
+      )}
+
+      {/* Footer row */}
+      <div className="flex items-center gap-2 mt-2 flex-wrap">
+        {task.dueDate && (
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#a57b5a]">
+            {t.due}{" "}
+            {new Date(task.dueDate).toLocaleDateString(
+              language === "he" ? "he-IL" : "en-GB",
+            )}
+          </span>
+        )}
+        <span
+          className="ms-auto text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+          style={{ background: badge.bg, color: badge.text }}
+        >
+          {getPriorityLabel(task.priority ?? 1, t)}
+        </span>
+      </div>
+
+      {/* Toggle button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggle(task);
+        }}
+        className={`mt-2.5 text-[10px] font-semibold px-3 py-1 rounded-full border transition-all ${
+          task.isCompleted
+            ? "bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100"
+            : "bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100"
+        }`}
+      >
+        {task.isCompleted ? `✓ ${t.filterCompleted}` : t.filterInProgress}
+      </button>
+    </div>
+  );
+}
+
+// ─── KanbanColumn ─────────────────────────────────────────────────────────────
+function KanbanColumn({
+  category,
+  tasks,
+  language,
+  onEdit,
+  onDelete,
+  onToggle,
+}) {
+  const t = translations[language];
+  const cfg = COLUMN_CONFIG[category];
+  const label = getCategoryLabel(category, t);
+
+  return (
+    <div
+      className="rounded-2xl flex flex-col min-h-[420px]"
+      style={{ background: cfg.bg, border: `1.5px solid ${cfg.border}` }}
+    >
+      {/* Header */}
+      <div
+        className="rounded-t-2xl px-5 py-4 flex items-center justify-between"
+        style={{ background: cfg.accent }}
+      >
+        <h2 className="text-white font-extrabold text-base tracking-wide">
+          {label}
+        </h2>
+        <span className="bg-white/25 text-white text-xs font-bold px-2.5 py-0.5 rounded-full">
+          {tasks.length}
+        </span>
+      </div>
+
+      {/* Cards */}
+      <div className="flex flex-col gap-3 p-4 flex-1">
+        {tasks.map((task) => (
+          <TaskCard
+            key={task.id}
+            task={task}
+            language={language}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onToggle={onToggle}
+          />
+        ))}
+        {tasks.length === 0 && (
+          <div className="flex-1 flex items-center justify-center py-8">
+            <p
+              className="text-sm italic font-medium"
+              style={{ color: cfg.accent + "88" }}
+            >
+              {t.empty}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── TasksPage ────────────────────────────────────────────────────────────────
 export default function TasksPage({ language }) {
   const [tasks, setTasks] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+  const [filter, setFilter] = useState("all"); // all | inProgress | completed
+  const [sort, setSort] = useState("date"); // date | priority
+
   const t = translations[language];
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get("https://localhost:7137/api/Tasks");
-      setTasks(response.data);
-    } catch (error) {
-      console.error("Error fetching tasks:", error);
+      const res = await axios.get(API);
+      setTasks(res.data);
+    } catch (err) {
+      console.error("Error fetching tasks:", err);
     }
   };
 
   const deleteTask = async (id) => {
     try {
-      await axios.delete(`https://localhost:7137/api/Tasks/${id}`);
+      await axios.delete(`${API}/${id}`);
       fetchTasks();
-    } catch (error) {
-      console.error("Error deleting task:", error);
+    } catch (err) {
+      console.error("Error deleting task:", err);
     }
   };
 
   const toggleComplete = async (task) => {
     try {
-      await axios.put(`https://localhost:7137/api/Tasks/${task.id}`, {
+      await axios.put(`${API}/${task.id}`, {
         ...task,
         isCompleted: !task.isCompleted,
       });
       fetchTasks();
-    } catch (error) {
-      console.error("Error updating task:", error);
+    } catch (err) {
+      console.error("Error updating task:", err);
     }
   };
 
@@ -146,82 +397,106 @@ export default function TasksPage({ language }) {
     fetchTasks();
   }, []);
 
+  const openAdd = () => {
+    setEditTask(null);
+    setShowModal(true);
+  };
+  const openEdit = (task) => {
+    setEditTask(task);
+    setShowModal(true);
+  };
+  const closeModal = () => setShowModal(false);
+
+  // Filter
+  const filtered = tasks.filter((task) => {
+    if (filter === "inProgress") return !task.isCompleted;
+    if (filter === "completed") return task.isCompleted;
+    return true;
+  });
+
+  // Sort
+  const sorted = [...filtered].sort((a, b) => {
+    if (sort === "priority") return (b.priority ?? 1) - (a.priority ?? 1);
+    return new Date(a.dueDate) - new Date(b.dueDate);
+  });
+
+  const colTasks = (cat) =>
+    sorted.filter((task) => (task.category ?? "Studies") === cat);
+
   return (
-    <div className="py-12 px-8 max-w-2xl mx-auto">
+    <div className="py-10 px-6 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between mb-10">
+      <div className="flex items-center justify-between mb-7">
         <h1 className="text-4xl font-extrabold text-[#4a3728] tracking-tight drop-shadow-sm">
           {t.title}
         </h1>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={openAdd}
           className="bg-[#a57b5a] hover:bg-[#8e684a] text-white font-bold px-5 py-2.5 rounded-2xl shadow-md active:scale-[0.98] transition-all"
         >
           + {t.addButton}
         </button>
       </div>
 
-      {/* Task list */}
-      <div className="space-y-4">
-        {tasks.map((task) => (
-          <div
-            key={task.id}
-            className="flex items-center justify-between p-6 bg-[#e7d8c9] rounded-2xl shadow-sm border border-white/30 hover:shadow-md transition-all"
-          >
-            <div
-              className="flex flex-col gap-1 cursor-pointer grow"
-              onClick={() => toggleComplete(task)}
-            >
-              <span
-                className={`text-lg font-bold transition-all ${
-                  task.isCompleted ? "text-slate-400 line-through" : "text-[#4a3728]"
-                }`}
-              >
-                {task.title}
-              </span>
-              <p className="text-slate-500 text-sm">{task.description}</p>
-              {task.dueDate && (
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#a57b5a] mt-2 block">
-                  {t.due}{" "}
-                  {new Date(task.dueDate).toLocaleDateString(
-                    language === "he" ? "he-IL" : "en-GB",
-                  )}
-                </span>
-              )}
-            </div>
+      {/* Toolbar: filters + sort */}
+      <div className="flex flex-wrap items-center gap-3 mb-8">
+        {/* Filter buttons */}
+        <div className="flex gap-2">
+          {[
+            { key: "all", label: t.filterAll },
+            { key: "inProgress", label: t.filterInProgress },
+            { key: "completed", label: t.filterCompleted },
+          ].map(({ key, label }) => (
             <button
-              onClick={() => deleteTask(task.id)}
-              className="text-slate-400 hover:text-rose-400 transition-colors ms-4 p-2 rounded-full hover:bg-white/30 shrink-0"
+              key={key}
+              onClick={() => setFilter(key)}
+              className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
+                filter === key
+                  ? "bg-[#a57b5a] text-white shadow-sm"
+                  : "bg-white/60 text-[#4a3728]/70 hover:bg-white hover:text-[#4a3728]"
+              }`}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
+              {label}
             </button>
-          </div>
-        ))}
+          ))}
+        </div>
 
-        {tasks.length === 0 && (
-          <div className="text-center py-16 bg-white/10 rounded-3xl border-2 border-dashed border-[#e6beae]/40">
-            <p className="text-[#4a3728]/60 font-medium text-lg italic">{t.empty}</p>
-          </div>
-        )}
+        {/* Sort dropdown */}
+        <div className="flex items-center gap-2 ms-auto">
+          <span className="text-sm font-semibold text-[#4a3728]/60">
+            {t.sortLabel}
+          </span>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="px-3 py-2 rounded-xl bg-white/70 border border-[#e6beae]/60 text-sm font-semibold text-[#4a3728] focus:outline-none focus:ring-2 focus:ring-[#a57b5a]"
+          >
+            <option value="date">{t.sortByDate}</option>
+            <option value="priority">{t.sortByPriority}</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Kanban board */}
+      <div className="grid grid-cols-3 gap-5">
+        {CATEGORIES.map((cat) => (
+          <KanbanColumn
+            key={cat}
+            category={cat}
+            tasks={colTasks(cat)}
+            language={language}
+            onEdit={openEdit}
+            onDelete={deleteTask}
+            onToggle={toggleComplete}
+          />
+        ))}
       </div>
 
       {showModal && (
-        <AddTaskModal
+        <TaskForm
           language={language}
-          onClose={() => setShowModal(false)}
+          task={editTask}
+          onClose={closeModal}
           onSaved={fetchTasks}
         />
       )}
