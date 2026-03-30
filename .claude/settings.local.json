@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cd /c/Users/gavri/OneDrive/שולחן העבודה/Projects/Smart-Student-Dashboard/Backend/StudentDashboard.API)",
+      "Bash(cd /c/Users/gavri/OneDrive/שולחן העבודה/Projects/Smart-Student-Dashboard/student-dashboard-client)",
+      "Bash(xargs head:*)"
+    ]
+  }
+}
