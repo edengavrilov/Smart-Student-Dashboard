@@ -75,7 +75,7 @@ export default function SchedulePage({ language }) {
 
   const fetchSchedule = async () => {
     try {
-      const res = await axios.get("https://localhost:7137/api/Schedule");
+      const res = await axios.get("https://student-dashboard-api-iryi.onrender.com/api/Schedule");
       setItems(res.data);
     } catch (err) {
       console.error("Error fetching schedule:", err);
@@ -86,7 +86,7 @@ export default function SchedulePage({ language }) {
 
   const deleteItem = async (id) => {
     try {
-      await axios.delete(`https://localhost:7137/api/Schedule/${id}`);
+      await axios.delete(`https://student-dashboard-api-iryi.onrender.com/api/Schedule/${id}`);
       fetchSchedule();
     } catch (err) {
       console.error("Error deleting schedule item:", err);

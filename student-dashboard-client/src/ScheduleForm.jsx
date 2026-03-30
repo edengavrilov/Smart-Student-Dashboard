@@ -111,12 +111,12 @@ export default function ScheduleForm({ language, onClose, onSaved, initialData }
     };
     try {
       if (isEdit) {
-        await axios.put(`https://localhost:7137/api/Schedule/${initialData.id}`, {
+        await axios.put(`https://student-dashboard-api-iryi.onrender.com/api/Schedule/${initialData.id}`, {
           id: initialData.id,
           ...payload,
         });
       } else {
-        await axios.post("https://localhost:7137/api/Schedule", { id: 0, ...payload });
+        await axios.post("https://student-dashboard-api-iryi.onrender.com/api/Schedule", { id: 0, ...payload });
       }
       onSaved();
       onClose();
