@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import ScheduleForm from "./ScheduleForm";
+import { API_BASE } from "./apiConfig";
 
 const GRID_START = 8;
 const GRID_END = 20;
@@ -66,16 +67,17 @@ function hexToRgb(hex) {
     : "100, 100, 100";
 }
 
-export default function SchedulePage({ language }) {
+export default function SchedulePage({ language, token }) {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formState, setFormState] = useState(null); // null | { initialData } — null=closed
   const [semFilter, setSemFilter] = useState("A");
   const t = translations[language];
+  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
   const fetchSchedule = async () => {
     try {
-      const res = await axios.get("https://student-dashboard-api-iryi.onrender.com/api/Schedule");
+      const res = await axios.get(`${API_BASE}/Schedule`, authHeader);
       setItems(res.data);
     } catch (err) {
       console.error("Error fetching schedule:", err);
@@ -86,7 +88,7 @@ export default function SchedulePage({ language }) {
 
   const deleteItem = async (id) => {
     try {
-      await axios.delete(`https://student-dashboard-api-iryi.onrender.com/api/Schedule/${id}`);
+      await axios.delete(`${API_BASE}/Schedule/${id}`, authHeader);
       fetchSchedule();
     } catch (err) {
       console.error("Error deleting schedule item:", err);
@@ -277,6 +279,7 @@ export default function SchedulePage({ language }) {
           initialData={formState.initialData}
           onClose={() => setFormState(null)}
           onSaved={fetchSchedule}
+          token={token}
         />
       )}
     </div>

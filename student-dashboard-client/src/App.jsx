@@ -1,17 +1,20 @@
 import { useState } from "react";
 import TasksPage from "./TasksPage";
 import SchedulePage from "./SchedulePage";
+import AuthPage from "./AuthPage";
 
 const translations = {
   en: {
     dashboard: "Student Dashboard",
     tasks: "Tasks",
     schedule: "Schedule",
+    logout: "Logout",
   },
   he: {
     dashboard: "לוח סטודנט",
     tasks: "משימות",
     schedule: "מערכת שעות",
+    logout: "יציאה",
   },
 };
 
@@ -67,12 +70,51 @@ const LANG_ICON = (
   </svg>
 );
 
+const LOGOUT_ICON = (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    className="h-5 w-5 shrink-0"
+    fill="none"
+    viewBox="0 0 24 24"
+    stroke="currentColor"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth={2}
+      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+    />
+  </svg>
+);
+
 export default function App() {
   const [language, setLanguage] = useState("en");
   const [activePage, setActivePage] = useState("tasks");
+  const [token, setToken] = useState(null);
+  const [userName, setUserName] = useState(null);
 
   const t = translations[language];
   const isRTL = language === "he";
+
+  const handleLogin = (jwt, name) => {
+    setToken(jwt);
+    setUserName(name);
+  };
+
+  const handleLogout = () => {
+    setToken(null);
+    setUserName(null);
+  };
+
+  if (!token) {
+    return (
+      <AuthPage
+        language={language}
+        onLogin={handleLogin}
+        onToggleLanguage={() => setLanguage(language === "en" ? "he" : "en")}
+      />
+    );
+  }
 
   return (
     <div
@@ -146,14 +188,41 @@ export default function App() {
             </button>
           ))}
         </nav>
+
+        {/* User name + logout at the bottom */}
+        <div className="px-3 mt-4 mb-2 flex flex-col gap-2">
+          {/* User name */}
+          <div className="flex items-center overflow-hidden">
+            <span className="w-10 flex items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-[#e7d8c9]/50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </span>
+            <span className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[140px] overflow-hidden transition-all duration-300 whitespace-nowrap text-xs text-[#e7d8c9]/60 font-medium truncate">
+              {userName}
+            </span>
+          </div>
+          {/* Logout button */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center py-2.5 rounded-2xl font-semibold transition-all text-[#e7d8c9]/70 hover:bg-white/10 hover:text-[#e7d8c9]"
+          >
+            <span className="w-10 flex items-center justify-center shrink-0">
+              {LOGOUT_ICON}
+            </span>
+            <span className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[120px] overflow-hidden transition-all duration-300 whitespace-nowrap">
+              {t.logout}
+            </span>
+          </button>
+        </div>
       </aside>
 
       {/* Main content */}
       <main className="flex-1 min-w-0 overflow-auto pb-16 md:pb-0">
         {activePage === "tasks" ? (
-          <TasksPage language={language} />
+          <TasksPage language={language} token={token} />
         ) : (
-          <SchedulePage language={language} />
+          <SchedulePage language={language} token={token} />
         )}
       </main>
 
@@ -182,6 +251,15 @@ export default function App() {
           {LANG_ICON}
           <span className="text-[10px] font-semibold tracking-wide">
             {language === "en" ? "עב׳" : "EN"}
+          </span>
+        </button>
+        <button
+          onClick={handleLogout}
+          className="flex flex-col items-center gap-1 px-6 py-1 rounded-xl text-[#e7d8c9]/60"
+        >
+          {LOGOUT_ICON}
+          <span className="text-[10px] font-semibold tracking-wide">
+            {t.logout}
           </span>
         </button>
       </nav>

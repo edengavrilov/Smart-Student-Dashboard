@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { API_BASE } from "./apiConfig";
 
-const API = "https://student-dashboard-api-iryi.onrender.com/api/Tasks";
+const API = `${API_BASE}/Tasks`;
 const CATEGORIES = ["Studies", "Personal", "Work"];
 
 const translations = {
@@ -84,7 +85,7 @@ function getPriorityLabel(priority, t) {
 }
 
 // ─── TaskForm Modal ────────────────────────────────────────────────────────────
-function TaskForm({ language, task, onClose, onSaved }) {
+function TaskForm({ language, task, onClose, onSaved, token }) {
   const t = translations[language];
   const isEdit = !!task;
 
@@ -96,6 +97,8 @@ function TaskForm({ language, task, onClose, onSaved }) {
   const [priority, setPriority] = useState(task?.priority ?? 1);
   const [category, setCategory] = useState(task?.category ?? "Studies");
   const [saving, setSaving] = useState(false);
+
+  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -112,9 +115,9 @@ function TaskForm({ language, task, onClose, onSaved }) {
         category,
       };
       if (isEdit) {
-        await axios.put(`${API}/${task.id}`, payload);
+        await axios.put(`${API}/${task.id}`, payload, authHeader);
       } else {
-        await axios.post(API, payload);
+        await axios.post(API, payload, authHeader);
       }
       onSaved();
       onClose();
@@ -356,7 +359,7 @@ function KanbanColumn({
 }
 
 // ─── TasksPage ────────────────────────────────────────────────────────────────
-export default function TasksPage({ language }) {
+export default function TasksPage({ language, token }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -365,10 +368,11 @@ export default function TasksPage({ language }) {
   const [sort, setSort] = useState("date"); // date | priority
 
   const t = translations[language];
+  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
   const fetchTasks = async () => {
     try {
-      const res = await axios.get(API);
+      const res = await axios.get(API, authHeader);
       setTasks(res.data);
     } catch (err) {
       console.error("Error fetching tasks:", err);
@@ -379,7 +383,7 @@ export default function TasksPage({ language }) {
 
   const deleteTask = async (id) => {
     try {
-      await axios.delete(`${API}/${id}`);
+      await axios.delete(`${API}/${id}`, authHeader);
       fetchTasks();
     } catch (err) {
       console.error("Error deleting task:", err);
@@ -391,7 +395,7 @@ export default function TasksPage({ language }) {
       await axios.put(`${API}/${task.id}`, {
         ...task,
         isCompleted: !task.isCompleted,
-      });
+      }, authHeader);
       fetchTasks();
     } catch (err) {
       console.error("Error updating task:", err);
@@ -512,6 +516,7 @@ export default function TasksPage({ language }) {
           task={editTask}
           onClose={closeModal}
           onSaved={fetchTasks}
+          token={token}
         />
       )}
     </div>

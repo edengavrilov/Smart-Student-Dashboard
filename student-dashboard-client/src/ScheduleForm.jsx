@@ -1,5 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
+import { API_BASE } from "./apiConfig";
 
 const PRESET_COLORS = [
   "#f87171", // red
@@ -61,7 +62,7 @@ function toTimeInput(str) {
   return str ? str.slice(0, 5) : "08:00";
 }
 
-export default function ScheduleForm({ language, onClose, onSaved, initialData }) {
+export default function ScheduleForm({ language, onClose, onSaved, initialData, token }) {
   const t = translations[language];
   const isEdit = Boolean(initialData);
 
@@ -93,6 +94,7 @@ export default function ScheduleForm({ language, onClose, onSaved, initialData }
   const [error, setError] = useState("");
 
   const set = (field, value) => setForm((prev) => ({ ...prev, [field]: value }));
+  const authHeader = { headers: { Authorization: `Bearer ${token}` } };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -111,12 +113,12 @@ export default function ScheduleForm({ language, onClose, onSaved, initialData }
     };
     try {
       if (isEdit) {
-        await axios.put(`https://student-dashboard-api-iryi.onrender.com/api/Schedule/${initialData.id}`, {
+        await axios.put(`${API_BASE}/Schedule/${initialData.id}`, {
           id: initialData.id,
           ...payload,
-        });
+        }, authHeader);
       } else {
-        await axios.post("https://student-dashboard-api-iryi.onrender.com/api/Schedule", { id: 0, ...payload });
+        await axios.post(`${API_BASE}/Schedule`, { id: 0, ...payload }, authHeader);
       }
       onSaved();
       onClose();
