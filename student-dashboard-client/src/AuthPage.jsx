@@ -25,7 +25,7 @@ const translations = {
     passwordPlaceholder: "Your password",
   },
   he: {
-    loginTitle: "ברוך השב",
+    loginTitle: "Welcome Back",
     registerTitle: "צור חשבון",
     loginSubtitle: "התחבר ללוח הסטודנט שלך",
     registerSubtitle: "הצטרף ל-Smart Student Dashboard",
@@ -84,7 +84,11 @@ export default function AuthPage({ language, onLogin, onToggleLanguage }) {
     setLoading(true);
     try {
       if (isRegister) {
-        await axios.post(`${AUTH_BASE}/register`, { fullName, email, password });
+        await axios.post(`${AUTH_BASE}/register`, {
+          fullName,
+          email,
+          password,
+        });
         setSuccessMsg(t.registrationSuccess);
         setMode("login");
         setFullName("");
@@ -218,8 +222,8 @@ export default function AuthPage({ language, onLogin, onToggleLanguage }) {
               {loading
                 ? t.loading
                 : isRegister
-                ? t.registerButton
-                : t.loginButton}
+                  ? t.registerButton
+                  : t.loginButton}
             </button>
           </form>
 

@@ -15,5 +15,9 @@ namespace StudentDashboard.API.Data
         public DbSet<ScheduleItem> ScheduleItems { get; set; }
 
         public DbSet<User> Users { get; set; }
+
+        public DbSet<Grade> Grades { get; set; }
+
+        public DbSet<GradeComponent> GradeComponents { get; set; }
     }
 }

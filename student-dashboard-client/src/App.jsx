@@ -2,18 +2,24 @@ import { useState } from "react";
 import TasksPage from "./TasksPage";
 import SchedulePage from "./SchedulePage";
 import AuthPage from "./AuthPage";
+import ProfilePage from "./ProfilePage";
+import GradesPage from "./GradesPage";
 
 const translations = {
   en: {
     dashboard: "Student Dashboard",
     tasks: "Tasks",
+    grades: "Grades",
     schedule: "Schedule",
+    profile: "Profile",
     logout: "Logout",
   },
   he: {
     dashboard: "לוח סטודנט",
     tasks: "משימות",
+    grades: "ציונים",
     schedule: "מערכת שעות",
+    profile: "פרופיל",
     logout: "יציאה",
   },
 };
@@ -48,6 +54,38 @@ const NAV_ICONS = {
         strokeLinejoin="round"
         strokeWidth={2}
         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+      />
+    </svg>
+  ),
+  grades: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5 shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+      />
+    </svg>
+  ),
+  profile: (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      className="h-5 w-5 shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={2}
+        d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"
       />
     </svg>
   ),
@@ -122,7 +160,7 @@ export default function App() {
       dir={isRTL ? "rtl" : "ltr"}
     >
       {/* Sidebar — hidden on mobile, shown on md+ */}
-      <aside className="group w-16 hover:w-56 shrink-0 min-h-screen bg-[#4a3728] text-white hidden md:flex flex-col py-8 shadow-2xl transition-[width] duration-300 overflow-hidden z-10">
+      <aside className="group w-16 hover:w-56 shrink-0 h-screen sticky top-0 bg-[#4a3728] text-white hidden md:flex flex-col py-8 shadow-2xl transition-[width] duration-300 overflow-hidden z-10">
         {/* Title */}
         <div className="flex items-center h-10 mb-10 px-3">
           {/* Icon always visible */}
@@ -167,7 +205,7 @@ export default function App() {
         </button>
 
         <nav className="flex flex-col gap-1 flex-1 px-3">
-          {["tasks", "schedule"].map((page) => (
+          {["tasks", "grades", "schedule", "profile"].map((page) => (
             <button
               key={page}
               onClick={() => setActivePage(page)}
@@ -221,18 +259,22 @@ export default function App() {
       <main className="flex-1 min-w-0 overflow-auto pb-16 md:pb-0">
         {activePage === "tasks" ? (
           <TasksPage language={language} token={token} />
-        ) : (
+        ) : activePage === "grades" ? (
+          <GradesPage language={language} token={token} />
+        ) : activePage === "schedule" ? (
           <SchedulePage language={language} token={token} />
+        ) : (
+          <ProfilePage language={language} token={token} />
         )}
       </main>
 
       {/* Bottom navigation — mobile only */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#4a3728] text-white flex items-center justify-around px-2 pt-2 pb-3 z-20 shadow-[0_-4px_12px_rgba(0,0,0,0.15)]">
-        {["tasks", "schedule"].map((page) => (
+        {["tasks", "grades", "schedule", "profile"].map((page) => (
           <button
             key={page}
             onClick={() => setActivePage(page)}
-            className={`flex flex-col items-center gap-1 px-6 py-1 rounded-xl transition-all ${
+            className={`flex flex-col items-center gap-1 px-3 py-1 rounded-xl transition-all ${
               activePage === page
                 ? "text-white bg-[#a57b5a]/40"
                 : "text-[#e7d8c9]/60"

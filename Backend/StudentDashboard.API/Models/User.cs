@@ -19,5 +19,14 @@ namespace StudentDashboard.API.Models
         public string PasswordHash { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+        [MaxLength(100)]
+        public string Institution { get; set; } = "";
+
+        [MaxLength(20)]
+        public string StudyYear { get; set; } = "";
+
+        [MaxLength(100)]
+        public string FieldOfStudy { get; set; } = "";
     }
 }
